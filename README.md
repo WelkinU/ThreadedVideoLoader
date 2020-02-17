@@ -15,7 +15,7 @@ Basic Multi-threaded Wrapper of OpenCV's VideoCapture
     for frame in vid:                   #iterate over each frame in the video / stream
         #do some processing
     
-    frame100 = vid[100]                 #get the 100th frame of the video, [] not currently supported for video streams
+    frame100 = vid[100]                 #get the 100th frame of the video, [] not supported for video streams
     lastFrame = vid[-1]                 #negative indexes work too
 
     numFrames = len(vid)                #Get the frame length of the video. Can also do vid.frame_count
@@ -25,7 +25,7 @@ Basic Multi-threaded Wrapper of OpenCV's VideoCapture
 
     print(vid)                          #Print the main properties of the VideoLoader object
     
-    #Release resources after you are done! If you initialize the VideoLoader using a "with" statement, you can skip this line.
+    #Release resources. Can skip this if the object was initialized using a "with" statement
     vid.release()
 
 ## Software Requirements
