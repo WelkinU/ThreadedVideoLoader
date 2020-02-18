@@ -1,12 +1,11 @@
 ''' Implements a wrapper to OpenCV's VideoCapture, that behaves like a Python Object.
-Should be compatible with all OpenCV versions. Support for threading to speed up
+Should be compatible with all applicable OpenCV versions. Support for threading to speed up
 video read operations.
 '''
 
 import cv2
 import threading
 import queue
-import timeit
 import inspect
 
 class VideoLoader():
@@ -61,6 +60,7 @@ class VideoLoader():
             frame = self.read_frame()
 
             self.cap.set(self.pos_frames_number, cur_frame_pos) #reset current frame position so this method doesn't interfere with __iter__() or __next__()
+            return frame
         else:
             raise IndexError(
                 f'''Frame Index is {idx}. Frame Index needs to be a int that is less than the number of frames in the video. 
