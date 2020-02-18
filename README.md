@@ -7,6 +7,7 @@ Basic Multi-threaded Wrapper of OpenCV's VideoCapture That Behaves Like Other Py
 * Easy iteration over video frames, particularly if iterating multiple times.
 * Easy indexing into local videos with [ ] operator (not currently supported for video streams)
 * More intuitive access to the internal video variables
+* Compatibility with multiple versions of OpenCV (>= 3.0.0 and 2.X.Y)
 
 ## Usage
     #create a threaded VideoLoader() object, can also do a "with" statement.
