@@ -47,6 +47,8 @@ class VideoLoader():
             self.thread_started = False
             self.frame_queue = queue.Queue(maxsize = max_queue_size)
             self.start_thread()
+            self.first_queue_full_warning_displayed = False
+
 
     def __getitem__(self,idx):
         ''' Magic Function so you can use the [] operator to index into this object
@@ -164,7 +166,11 @@ class VideoLoader():
                 self.frame_queue.put(frame,block=True, timeout = 1) #timeout is in seconds, on last read, None is put into the Queue conveniently 
             except queue.Full:
                 #Current behavior is that if the queue is full and the main process has not exited, then we start dropping frames
-                if not self.thread_started:
+                if self.thread_started:
+                    if not self.first_queue_full_warning_displayed:
+                        self.first_queue_full_warning_displayed=True
+                        print('Warning background thread has filled up frame queue storage. Future frames may be dropped.')
+                else:
                     break
         self.thread_started = False
 
@@ -175,7 +181,7 @@ class VideoLoader():
 if __name__ == '__main__':
     #webcam test - press q or esc to exit
     vid = VideoLoader(0)
-    for frame in x:
+    for frame in vid:
         cv2.imshow('Image',frame)
         if cv2.waitKey(1) in [27,ord('q')]:
             vid.release()
