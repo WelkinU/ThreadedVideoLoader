@@ -160,9 +160,12 @@ class VideoLoader():
         ret = True
         while ret and self.thread_started:
             ret, frame = self.cap.read()
-            self.frame_queue.put(frame,block=True,timeout = 30) #timeout is in seconds, on last read, None is put into the Queue conveniently 
-
-        #print('Background thread complete.')
+            try:
+                self.frame_queue.put(frame,block=True, timeout = 1) #timeout is in seconds, on last read, None is put into the Queue conveniently 
+            except queue.Full:
+                #Current behavior is that if the queue is full and the main process has not exited, then we start dropping frames
+                if not self.thread_started:
+                    break
         self.thread_started = False
 
     def stop_thread(self):
