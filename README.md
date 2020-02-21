@@ -7,6 +7,7 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
 * Easy iteration over video frames, particularly if iterating multiple times.
 * Easy indexing/slicing of videos with [ ] operator (not currently supported for video streams)
 * More intuitive access to the internal video variables (fps, height, width, etc.)
+* Apply image transforms to your output, or apply the transform to the whole video and save it to a file
 * Compatibility with multiple versions of OpenCV (>= 3.0.0 and 2.X.Y)
 
 ## Usage
@@ -28,10 +29,22 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
     width = vid.width                   #Get the width in pixels
 
     print(vid)                          #Print the main properties of the VideoLoader object
-      
+    
     #Release resources. Can skip this if the object was initialized using a "with" statement
     vid.release()
 
+## Advanced Usage
+#### Automatic image transforms
+    #This VideoLoader loads images upside-down!
+    vid_flipped = VideoLoader('myvideo.mp4', transform = np.flipud())
+
+#### Applying image transforms to videos
+    #This VideoLoader loads images upside-down!
+    vid_flipped = VideoLoader('myvideo.mp4', transform = np.flipud())
+    
+    #save the flipped video as 'myvideo_flipped.mp4'
+    vid_flipped.apply_transform_to_video(output_video_path = 'myvideo_flipped.mp4')
+    
 ## Software Requirements
 Python 3 with OpenCV installed.
 
