@@ -1,35 +1,40 @@
 # ThreadedVideoLoader
-Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list and/or generator object.
+Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list.
 
 ## Functionality
 * Loading from (almost) anything: Videos, Webcams, RTSP stream, HTTP stream
-* Loading in background thread by default. Alternatively you can pre-cache frames.
 * Easy iteration over video frames, particularly if iterating multiple times.
 * Easy indexing/slicing of videos with [ ] operator (not currently supported for video streams)
+* Loading in background thread by default. Alternatively you can pre-cache frames for faster repeated execution.
 * More intuitive access to the internal video variables (fps, height, width, etc.)
 * Apply image transforms to your output, or apply the transform to the whole video and save it to a file
 * Compatibility with multiple versions of OpenCV (>= 3.0.0 and 2.X.Y)
 
 ## Usage
-    #create a threaded VideoLoader() object, can also do a "with" statement.
-    vid = VideoLoader('myvideo.mp4', use_threading = True, max_queue_size = 50)     #Load from video file
-    webcam = VideoLoader(0, use_threading = True)                                   #Load from webcam
+
+#### Example Initialization of VideoLoader() Objects
+    vid = VideoLoader('myvideo.mp4')                                                #Load from video file
+    webcam = VideoLoader(0)                                                         #Load from webcam
     largerWebcam = VideoLoader(0, height = 1080, width = 1920)                      #Force OpenCV to use larger dimensions
-    
+
+#### Iterate Over a VideoLoader() Object
     for frame in vid:                   #iterate over each frame in the video / stream
         #do some processing
     
+#### Indexing and List Slicing
     frame100 = vid[100]                 #get the 100th frame of the video, [] not supported for video streams
     lastFrame = vid[-1]                 #negative indexes work too
     reversedVideoSpedUp = vid[::-2]     #List-like slicing. Use precache_frames for fast slicing on large slices
 
+#### Easy Access to Video Parameters
     numFrames = len(vid)                #Get the frame length of the video. Can also do vid.frame_count
     fps = vid.fps                       #Get the video fps
     height = vid.height                 #Get the height in pixels
     width = vid.width                   #Get the width in pixels
 
     print(vid)                          #Print the main properties of the VideoLoader object
-    
+
+#### Object Cleanup (Release Resources)
     #Release resources. Can skip this if the object was initialized using a "with" statement
     vid.release()
 
