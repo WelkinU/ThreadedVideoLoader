@@ -20,7 +20,7 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
     
     frame100 = vid[100]                 #get the 100th frame of the video, [] not supported for video streams
     lastFrame = vid[-1]                 #negative indexes work too
-    reversedVideo = vid[::-1]           #List-like slicing. Use precache_frames for fast slicing on large slices
+    reversedVideoSpedUp = vid[::-2]     #List-like slicing. Use precache_frames for fast slicing on large slices
 
     numFrames = len(vid)                #Get the frame length of the video. Can also do vid.frame_count
     fps = vid.fps                       #Get the video fps
@@ -46,5 +46,5 @@ Try using VideoLoader(precache_frames = True). For now, this is the best you can
 I think this is a system issue. A workaround I have found is to set VideoLoader(0, height = **1081**, width = 1920) - it is fast, and returns videos at 1920x1080 (not 1081)
 
 ## TODO
-[ ] Have VideoLoader slicing return iterator instead of list?
-[ ] Smarter frame caching algorithm. Need to test tradeoffs between different frame caching methods for different use cases.
+- [ ] Have VideoLoader slicing return iterator instead of list
+- [ ] Smarter frame caching algorithm. Test tradeoffs between different frame caching methods for different use cases.
