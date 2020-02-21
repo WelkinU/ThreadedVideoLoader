@@ -44,3 +44,7 @@ Try using VideoLoader(precache_frames = True). For now, this is the best you can
 
 #### When trying to load from certain 1920x1080 webcams on Windows 10, the stream can be very slow!
 I think this is a system issue. A workaround I have found is to set VideoLoader(0, height = **1081**, width = 1920) - it is fast, and returns videos at 1920x1080 (not 1081)
+
+## TODO
+[ ] Have VideoLoader slicing return iterator instead of list?
+[ ] Smarter frame caching algorithm. Need to test tradeoffs between different frame caching methods for different use cases.
