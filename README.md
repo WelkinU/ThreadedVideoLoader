@@ -2,7 +2,7 @@
 Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list and/or generator object.
 
 ## Functionality
-* Loading from anything supported by OpenCV: Videos (mp4, avi, mov, etc.), Webcams, etc. Untested: RTSP stream and HTTP stream.
+* Loading from (almost) anything: Videos, Webcams, RTSP stream, HTTP stream
 * Loading in background thread by default. Alternatively you can pre-cache frames.
 * Easy iteration over video frames, particularly if iterating multiple times.
 * Easy indexing/slicing of videos with [ ] operator (not currently supported for video streams)
