@@ -17,7 +17,8 @@ class VideoLoader():
     Based on code here: https://github.com/WelkinU/ThreadedVideoLoader
     '''
 
-    def __init__(self, video_path, use_threading = True, precache_frames = False, max_queue_size = 20, image_transform = None, width = None, height = None):
+    def __init__(self, video_path, use_threading = True, precache_frames = False, return_slices_as_iterator = False,
+                    max_queue_size = 20, image_transform = None, width = None, height = None):
         ''' Initialize Video Loader
         video_path {str} -- Filepath to the video (path/to/video.mp4). Alternatively, use 0 for webcam (or 1 for your second webcam).
         use_threading {bool} -- If True, uses background thread to pre-caches frames in memory for speed.
@@ -31,10 +32,10 @@ class VideoLoader():
         width {int} -- Override the defualt OpenCV capture dimensions. Useful when OpenCV incorrectly detects webcam dimensions. (Default {None})
         height {int} -- Override the defualt OpenCV capture dimensions. Useful when OpenCV incorrectly detects webcam dimensions. (Default {None})
         '''
-
         self.cap = cv2.VideoCapture(video_path)
         self.video_path = video_path
         self.image_transform = image_transform
+        self.return_slices_as_iterator = return_slices_as_iterator
 
         '''video properties - for more see: https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html
             Note the constants names changed between OpenCV versions. Versions >= 3 don't have the "CV_" at the beginning.
@@ -105,8 +106,11 @@ class VideoLoader():
             return self.frame_cache[idx]
 
         if isinstance(idx,slice):
-            frame_list = self.get_series_of_frames(start_frame = idx.start, end_frame = idx.stop, step = abs(idx.step))
-            return frame_list if idx.step>0 else frame_list[::-1]
+            if self.return_slices_as_iterator and idx.step > 0:
+                return self.get_series_of_frames_iterator(start_frame = idx.start, end_frame = idx.stop, step = abs(idx.step))
+            else:
+                frame_list = self.get_series_of_frames(start_frame = idx.start, end_frame = idx.stop, step = abs(idx.step))
+                return frame_list if idx.step>0 else frame_list[::-1]
         else:
             if self.frame_count > idx >= -self.frame_count and isinstance(idx,int):
                 cur_frame_pos = self.get_frame_position() #save current frame position so this method doesn't interfere with __iter__() or __next__()
@@ -217,8 +221,44 @@ class VideoLoader():
 
         if self.frame_count > end_frame >= start_frame >= 0:
             cur_frame_pos = self.get_frame_position() #save current frame position so this method doesn't interfere with __iter__() or __next__()
-
             frame_list = []
+            self.cap.set(self.pos_frames_number, start_frame)
+            #reading all the frames is faster than seeking according to this:
+            #https://stackoverflow.com/questions/52655841/opencv-python-multithreading-seeking-within-a-videocapture-object
+            for idx, frame in enumerate(self.__iter__()):
+                if start_frame + idx >= end_frame:
+                    break
+                if idx % step == 0:
+                    frame = self.apply_transform(frame)
+                    frame_list.append(frame)
+
+            self.stop_thread() #to prevent error "Assertion fctx->async_lock failed at libavcodec/pthread_frame.c:155"           
+            self.cap.set(self.pos_frames_number, cur_frame_pos) #reset current frame position so this method doesn't interfere with __iter__() or __next__()
+            return frame_list
+        else:
+            raise IndexError(
+                f'''Inputs must satisfy frame_count > end_frame >= start_frame >= 0. Start Frame = {start_frame}. End frames = {end_frame}. Frame count = {self.frame_count}.''')
+
+    def get_series_of_frames_iterator(self, start_frame = None, end_frame = None, step = 1):
+        '''Helper function for __getitem__()
+
+        Returns series of frames from the video from start_frame (inclusive) to end_frame (not inclusive).
+        Step is to process every Nth frame, for example step = 3 returns every 3rd frame.'''
+        assert self.frame_count >= 0, 'Operation not supported for video streams(webcam, http stream, etc)'
+        assert step > 0, 'Invalid step for iterator. OpenCV cant easily iterate through videos in reverse'
+
+        if start_frame is None:
+            start_frame = 0
+
+        if end_frame is None:
+            end_frame = self.frame_count-1
+
+        if end_frame < 0:
+            end_frame += self.frame_count #allow user to put in end frame with negative index
+
+        if self.frame_count > end_frame >= start_frame >= 0:
+            cur_frame_pos = self.get_frame_position() #save current frame position so this method doesn't interfere with __iter__() or __next__()
+
             self.cap.set(self.pos_frames_number, start_frame)
             #reading all the frames is faster than seeking according to 
             #https://stackoverflow.com/questions/52655841/opencv-python-multithreading-seeking-within-a-videocapture-object
@@ -226,14 +266,14 @@ class VideoLoader():
                 if start_frame + idx >= end_frame:
                     break
                 if idx % step == 0:
-                    frame_list.append(frame)                
+                    yield self.apply_transform(frame)                
 
+            self.stop_thread() #to prevent error "Assertion fctx->async_lock failed at libavcodec/pthread_frame.c:155"
             self.cap.set(self.pos_frames_number, cur_frame_pos) #reset current frame position so this method doesn't interfere with __iter__() or __next__()
-
-            return frame_list
         else:
             raise IndexError(
                 f'''Inputs must satisfy frame_count > end_frame >= start_frame >= 0. Start Frame = {start_frame}. End frames = {end_frame}. Frame count = {self.frame_count}.''')
+
 
     def set(self, var1, var2):
         self.cap.set(var1, var2)           
@@ -305,6 +345,7 @@ class VideoLoader():
     def stop_thread(self):
         self.thread_started = False
         self.thread.join()
+
 if __name__ == '__main__':
     #webcam test - press q or esc to exit
     vid = VideoLoader(0)
