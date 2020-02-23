@@ -2,7 +2,7 @@
 Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list.
 
 ## Functionality
-* Loading from (almost) anything: Videos, Webcams, RTSP stream, HTTP stream
+* Loading from (almost) anything: Video Files, Webcams, RTSP Stream, HTTP Stream
 * Easy iteration over video frames, particularly if iterating multiple times.
 * Easy indexing/slicing of videos with [ ] operator (not currently supported for video streams)
 * Loading in background thread by default. Alternatively you can pre-cache frames for faster repeated execution.
@@ -22,9 +22,9 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list.
         #do some processing
     
 #### Indexing and List Slicing
-    frame100 = vid[100]                 #get the 100th frame of the video, [] not supported for video streams
+    frame100 = vid[100]                 #get the 100th frame of the video - first frame of a video is 0
     lastFrame = vid[-1]                 #negative indexes work too
-    reversedVideoSpedUp = vid[::-2]     #List-like slicing. Use precache_frames for fast slicing on large slices
+    slicedList = vid[50:100:-2]         #list-like slicing. Use precache_frames for fast repeated slicing on large slices
 
 #### Easy Access to Video Parameters
     numFrames = len(vid)                #Get the frame length of the video. Can also do vid.frame_count
@@ -58,11 +58,13 @@ Python 3 with OpenCV installed.
 Try other integers - 1, 2, etc. Use VideoLoader(-1) to see available devices.
 
 #### Slicing VideoLoader() objects is slow for large slices.
-Try using VideoLoader(precache_frames = True). For now, this is the best you can do on this.
+Options:
+1. Return an iterator from the slice operator with VideoLoader('myvideo.mp4',return_slices_as_iterator = True). Note this only is a speedup for positive values of step. Negative step values still require the loader to read the whole batch of frames.
+2. If you can frontload the load time, try VideoLoader('myvideo.mp4', precache_frames = True).
 
 #### When trying to load from certain 1920x1080 webcams on Windows 10, the stream can be very slow!
-I think this is a system issue. A workaround I have found is to set VideoLoader(0, height = **1081**, width = 1920) - it is fast, and returns videos at 1920x1080 (not 1081)
+I think this is a system issue. A workaround I have found is to set VideoLoader(0, height = **1081**, width = 1920) - it loads frames at 30 FPS and returns videos at the correct size 1920x1080 (not 1081)
 
 ## TODO
-- [ ] Have VideoLoader slicing return iterator instead of list
-- [ ] Smarter frame caching algorithm. Test tradeoffs between different frame caching methods for different use cases.
+- [x] Have VideoLoader slicing return iterator instead of list - Use VideoLoader('myvideo.mp4',return_slices_as_iterator = True)
+- [ ] Smarter frame caching algorithm. 
