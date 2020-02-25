@@ -45,7 +45,8 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list.
 
 #### Applying image transforms to videos
     #This VideoLoader loads images upside-down!
-    vid_flipped = VideoLoader('myvideo.mp4', transform = np.flipud())
+    import numpy as np
+    vid_flipped = VideoLoader('myvideo.mp4', image_transform = np.flipud)
     
     #save the flipped video as 'myvideo_flipped.mp4'
     vid_flipped.apply_transform_to_video(output_video_path = 'myvideo_flipped.mp4')
