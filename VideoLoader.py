@@ -45,7 +45,6 @@ class VideoLoader():
             self.fps = self.cap.get(cv2.CAP_PROP_FPS)
             self.frame_count = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
             self.video_codec = int(self.cap.get(cv2.CAP_PROP_FOURCC))
-            #self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
             if height is None:
                 self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -106,10 +105,11 @@ class VideoLoader():
             return self.frame_cache[idx]
 
         if isinstance(idx,slice):
-            if self.return_slices_as_iterator and idx.step > 0:
-                return self.get_series_of_frames_iterator(start_frame = idx.start, end_frame = idx.stop, step = abs(idx.step))
+            step = idx.step if idx.step else 1
+            if self.return_slices_as_iterator and step > 0:
+                return self.get_series_of_frames_iterator(start_frame = idx.start, end_frame = idx.stop, step = abs(step))
             else:
-                frame_list = self.get_series_of_frames(start_frame = idx.start, end_frame = idx.stop, step = abs(idx.step))
+                frame_list = self.get_series_of_frames(start_frame = idx.start, end_frame = idx.stop, step = abs(step))
                 return frame_list if idx.step>0 else frame_list[::-1]
         else:
             if self.frame_count > idx >= -self.frame_count and isinstance(idx,int):
@@ -268,7 +268,7 @@ class VideoLoader():
                 if start_frame + idx >= end_frame:
                     break
                 if idx % step == 0:
-                    yield self.apply_transform(frame)                
+                    yield frame                
 
             self.stop_thread() #to prevent error "Assertion fctx->async_lock failed at libavcodec/pthread_frame.c:155"
             self.cap.set(self.pos_frames_number, cur_frame_pos) #reset current frame position so this method doesn't interfere with __iter__() or __next__()
