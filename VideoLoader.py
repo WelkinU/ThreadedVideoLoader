@@ -194,13 +194,13 @@ class VideoLoader():
         return self
 
     def __exit__(self):
-        print('Releasing resources.')
+        #print('Releasing resources.')
         if self.use_threading:
             self.stop_thread()
         self.cap.release()
 
-    #def __del__(self):
-    #    self.__exit__()
+    def __del__(self):
+        self.__exit__()
 
     def release(self):
         self.__exit__()
@@ -276,31 +276,94 @@ class VideoLoader():
             raise IndexError(
                 f'''Inputs must satisfy frame_count > end_frame >= start_frame >= 0. Start Frame = {start_frame}. End frames = {end_frame}. Frame count = {self.frame_count}.''')
 
-
     def set(self, var1, var2):
         self.cap.set(var1, var2)           
 
     def get_frame_position(self):
         return self.cap.get(self.pos_frames_number)
 
-    def apply_transform_to_video(self,output_video_path=None,output_video_codec = None):
+    def apply_transform_to_video(self,output_video_path=None,output_video_codec = None, fps = None, enable_start_stop_with_keypress = False):
+        ''' Apply image_transform to video.
+        output_video_path {str} -- Filepath to the output video (ex. path/to/video.mp4). Defaults behavior is as follows:
+                                    If input video is my/video/test.mp4, default output is my/video/test_transformed.mp4
+        output_video_codec {cv2 VideoCodec Object or Str} -- If input is cv2 VideoCodec object, use that codec
+                                                            If input is string, attempt to convert that to VideoCodec object (example string input: 'mp4v')
+                                                            Default behavior is to use same video codec as input video file, or if input is a webcam, use mp4v
+        fps {int/float} -- The video frames per second. Default is same FPS as video file or webcam. If FPS not detected properly, default is 24 FPS.
+        enable_start_stop_with_keypress {bool} -- This allows you to start/stop recording with a keypress. Feature is intended solely for ease of use in saving webcam frames.
+                                                    Not recommended for usage with video files.
+        '''
+
+
         if self.image_transform is None:
-            print('Warning: No image transform selected. Not creating output video, because it would be the same as the input video.')
-            return 1
+            print('WARNING: No image transform selected.')
 
         if output_video_path is None:
             output_video_path = self.video_path[:-4] + "_transformed" + self.video_path[-4:]
 
         if output_video_codec is None:
-            output_video_codec = self.video_codec
+            output_video_codec = self.video_codec if self.frame_count > 0 else 'mp4v' #use same video codec if video file, for webcam defualt to mp4v
+
+        if isinstance(output_video_codec,str):
+            if output_video_codec == 'mp4': #just in case someone puts in mp4 intending mp4v
+                output_video_codec = 'mp4v'
+
+            output_video_codec = cv2.VideoWriter_fourcc(*output_video_codec)
+
+        if fps is None:
+            fps = self.fps
+
+        if fps <= 0:
+            print(f'WARNING: FPS {fps} < 0, using FPS = 24 instead')
+            fps = 24
+
+        if enable_start_stop_with_keypress:
+            windowName = 'PRESS ANY KEY TO START RECORDING FRAMES'
+            for frame in self.__iter__():
+                cv2.imshow(windowName, frame)
+                if 0 <= cv2.waitKey(30):
+                    break
+            cv2.destroyWindow(windowName)
 
         print(f'Creating transformed video: {output_video_path}')
-        vid_writer = cv2.VideoWriter(output_video_path, output_video_codec, self.fps, (self.width,self.height))
+        vid_writer = cv2.VideoWriter(output_video_path, output_video_codec, fps, (self.width,self.height))
         for frame in self.__iter__():
             vid_writer.write(frame)
 
+            if enable_start_stop_with_keypress:
+                cv2.imshow('PRESS ANY KEY TO STOP DUMPING FRAMES',frame)
+                if 0 <= cv2.waitKey(1):
+                    break
+
         vid_writer.release()
+        print('Done.')
         return 0
+
+    def dump_frames_from_video(self, output_folder, file_format = 'frame{:05d}.jpg', enable_start_stop_with_keypress = False):
+        ''' Use this to dump frames from a video or webcam
+        output_folder {str} -- Folder to dump the output files to.
+        file_format {str} -- The file name and format to dump frames to. The first {} in the format is replaced with the frame number.
+                             Ex. frame{:05d}.jpg dumps frames as frame00000.jpg, frame00001.jpg, etc.
+        enable_start_stop_with_keypress {bool} -- This allows you to start/stop recording with a keypress. Feature is intended solely for ease of use in saving webcam frames.
+                                                    Not recommended for usage with video files.
+
+        '''
+
+        if enable_start_stop_with_keypress:
+            windowName = 'PRESS ANY KEY TO START RECORDING FRAMES'
+            for frame in self.__iter__():
+                cv2.imshow(windowName, frame)
+                if 0 <= cv2.waitKey(30):
+                    break
+            cv2.destroyWindow(windowName)
+
+        for idx,frame in enumerate(self.__iter__()):
+            cv2.imwrite(output_folder + '/' + file_format.format(idx), frame) #can put this in a thread for speed when using webcam
+
+            if enable_start_stop_with_keypress:
+                cv2.imshow('PRESS ANY KEY TO STOP DUMPING FRAMES',frame)
+                if 0 <= cv2.waitKey(1):
+                    break
 
     def apply_transform(self,frame):
         return frame if self.image_transform is None else self.image_transform(frame)
@@ -351,8 +414,11 @@ class VideoLoader():
 if __name__ == '__main__':
     #webcam test - press q or esc to exit
     vid = VideoLoader(0)
+    print(vid)
+    
     for frame in vid:
         cv2.imshow('Image',frame)
         if cv2.waitKey(1) in [27,ord('q')]:
             vid.release()
             break
+    
