@@ -1,14 +1,13 @@
 # ThreadedVideoLoader
-Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list.
+Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list and/or generator object.
 
 ## Functionality
-* Loading from (almost) anything: Video Files, Webcams, RTSP Stream, HTTP Stream
-* Easy iteration over video frames, particularly if iterating multiple times.
-* Easy indexing/slicing of videos with [ ] operator (not currently supported for video streams)
-* Loading in background thread by default. Alternatively you can pre-cache frames for faster repeated execution.
+* Handles Video Files, Webcams, RTSP Stream, HTTP Stream
+* Easy iteration and list-like slicing of video frames
 * More intuitive access to the internal video variables (fps, height, width, etc.)
-* Apply image transforms to your output, or apply the transform to the whole video and save it to a file
-* Compatibility with multiple versions of OpenCV (>= 3.0.0 and 2.X.Y)
+* Multi-threaded execution and optional frame caching for speed
+* Apply image transforms to your output, optionally save new video with transforms applied
+* Extract frames from video / webcam and save to image files
 
 ## Usage
 
@@ -40,23 +39,43 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list.
 
 ## Advanced Usage
 #### Automatic image transforms
+    import numpy as np
     #This VideoLoader loads images upside-down!
     vid_flipped = VideoLoader('myvideo.mp4', transform = np.flipud())
 
-#### Applying image transforms to videos
+#### Applying image transforms to videos / webcam output
     #This VideoLoader loads images upside-down!
-    import numpy as np
     vid_flipped = VideoLoader('myvideo.mp4', image_transform = np.flipud)
     
     #save the flipped video as 'myvideo_flipped.mp4'
     vid_flipped.apply_transform_to_video(output_video_path = 'myvideo_flipped.mp4')
+
+#### Recording webcam output as video
+    webcam = VideoLoader(0)
+    
+    #record to video "test.mp4". 
+    #Use enable_start_stop_with_keypress = True to start/stop recording by pressing any key.
+    webcam.apply_transform_to_video(output_video_path = 'test.mp4', enable_start_stop_with_keypress = True)
+    
+#### Extract frames from Video / Webcam
+Extract frames from a video file or webcam video stream and save them to a folder:
+
+    file_format = 'frame{:05d}.jpg' #frame{:05d}.jpg extracts frames as frame00000.jpg, frame00001.jpg, etc.
+
+    vid = VideoLoader('myvideo.mp4')
+    vid.dump_frames_from_video('my/output/folder', file_format = file_format)
+    
+    webcam = VideoLoader(0)
+    webcam.dump_frames_from_video('my/output/folder', file_format = file_format,enable_start_stop_with_keypress = True)
+    
     
 ## Software Requirements
-Python 3 with OpenCV installed.
+Python 3.6+ with OpenCV installed. (Python 3.6 only required for format strings.) 
+Compatibile with multiple versions of OpenCV (>= 3.0.0 and 2.X.Y)
 
 ## Issues
 #### VideoLoader(0) doesn't find my webcam!
-Try other integers - 1, 2, etc. Use VideoLoader(-1) to see available devices.
+Try other integers: 1, 2, etc. Use VideoLoader(-1) to see available devices.
 
 #### Slicing VideoLoader() objects is slow for large slices.
 Options:
