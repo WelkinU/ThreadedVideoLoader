@@ -282,7 +282,7 @@ class VideoLoader():
     def get_frame_position(self):
         return self.cap.get(self.pos_frames_number)
 
-    def apply_transform_to_video(self,output_video_path=None,output_video_codec = None, fps = None, enable_start_stop_with_keypress = False):
+    def apply_transform_to_video(self,output_video_path=None,output_video_codec = None, fps = None, start = 0, end = None, step = 1, enable_start_stop_with_keypress = False):
         ''' Apply image_transform to video.
         output_video_path {str} -- Filepath to the output video (ex. path/to/video.mp4). Defaults behavior is as follows:
                                     If input video is my/video/test.mp4, default output is my/video/test_transformed.mp4
@@ -290,6 +290,9 @@ class VideoLoader():
                                                             If input is string, attempt to convert that to VideoCodec object (example string input: 'mp4v')
                                                             Default behavior is to use same video codec as input video file, or if input is a webcam, use mp4v
         fps {int/float} -- The video frames per second. Default is same FPS as video file or webcam. If FPS not detected properly, default is 24 FPS.
+        start {int} -- Start frame number - useful for processing only a portion of the video.
+        end {int} -- End frame number - useful for processing only a portion of the video. Defaults to end of video
+        start {int} -- Step ie. process every Nth frame - useful for processing only a portion of the video.
         enable_start_stop_with_keypress {bool} -- This allows you to start/stop recording with a keypress. Feature is intended solely for ease of use in saving webcam frames.
                                                     Not recommended for usage with video files.
         '''
@@ -327,7 +330,7 @@ class VideoLoader():
 
         print(f'Creating transformed video: {output_video_path}')
         vid_writer = cv2.VideoWriter(output_video_path, output_video_codec, fps, (self.width,self.height))
-        for frame in self.__iter__():
+        for frame in self.get_series_of_frames_iterator(start,end,step):
             vid_writer.write(frame)
 
             if enable_start_stop_with_keypress:
@@ -339,11 +342,14 @@ class VideoLoader():
         print('Done.')
         return 0
 
-    def dump_frames_from_video(self, output_folder, file_format = 'frame{:05d}.jpg', enable_start_stop_with_keypress = False):
+    def dump_frames_from_video(self, output_folder, file_format = 'frame{:05d}.jpg', start = 0, end = None, step = 1, enable_start_stop_with_keypress = False):
         ''' Use this to dump frames from a video or webcam
         output_folder {str} -- Folder to dump the output files to.
         file_format {str} -- The file name and format to dump frames to. The first {} in the format is replaced with the frame number.
                              Ex. frame{:05d}.jpg dumps frames as frame00000.jpg, frame00001.jpg, etc.
+        start {int} -- Start frame number - useful for processing only a portion of the video.
+        end {int} -- End frame number - useful for processing only a portion of the video. Defaults to end of video
+        start {int} -- Step ie. process every Nth frame - useful for processing only a portion of the video.
         enable_start_stop_with_keypress {bool} -- This allows you to start/stop recording with a keypress. Feature is intended solely for ease of use in saving webcam frames.
                                                     Not recommended for usage with video files.
 
@@ -357,7 +363,10 @@ class VideoLoader():
                     break
             cv2.destroyWindow(windowName)
 
-        for idx,frame in enumerate(self.__iter__()):
+        if end is None:
+            end = self.frame_count-1
+
+        for idx,frame in zip(range(start,end,step),self.get_series_of_frames_iterator(start,end,step)):
             cv2.imwrite(output_folder + '/' + file_format.format(idx), frame) #can put this in a thread for speed when using webcam
 
             if enable_start_stop_with_keypress:
