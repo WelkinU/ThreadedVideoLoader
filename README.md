@@ -8,6 +8,7 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
 * Multi-threaded execution and optional frame caching for speed
 * Apply image transforms to your output, optionally save new video with transforms applied
 * Extract frames from video / webcam and save to image files
+* No compatibility issues with different OpenCV versions (handles OpenCV API changes for versions before and after 3.0.0)
 
 ## Usage
 
@@ -50,12 +51,21 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
     #save the flipped video as 'myvideo_flipped.mp4'
     vid_flipped.apply_transform_to_video(output_video_path = 'myvideo_flipped.mp4')
 
+#### Crop video length / downsample frame rate
+    vid = VideoLoader('myvideo.mp4')
+    
+    #output a video starting on frame 100, ending on frame 400 with a step size of 10 
+    vid.apply_transform_to_video(start = 100, end = 400, step = 10)
+
 #### Recording webcam output as video
     webcam = VideoLoader(0)
     
     #record to video "test.mp4". 
     #Use enable_start_stop_with_keypress = True to start/stop recording by pressing any key.
     webcam.apply_transform_to_video(output_video_path = 'test.mp4', enable_start_stop_with_keypress = True)
+    
+    #record every 10th frame
+    webcam.apply_transform_to_video(output_video_path = 'test.mp4', step = 10)
     
 #### Extract frames from Video / Webcam
 Extract frames from a video file or webcam video stream and save them to a folder:
@@ -64,6 +74,9 @@ Extract frames from a video file or webcam video stream and save them to a folde
 
     vid = VideoLoader('myvideo.mp4')
     vid.dump_frames_from_video('my/output/folder', file_format = file_format)
+    
+    #output only a portion of frames - every 10th frame from frame 0 to 100
+    vid.dump_frames_from_video('my/output/folder', start = 0, end = 100, step = 10)
     
     webcam = VideoLoader(0)
     webcam.dump_frames_from_video('my/output/folder', file_format = file_format,enable_start_stop_with_keypress = True)
@@ -87,4 +100,3 @@ I think this is a system issue. A workaround I have found is to set VideoLoader(
 
 ## TODO
 - [x] Have VideoLoader slicing return iterator instead of list - Use VideoLoader('myvideo.mp4',return_slices_as_iterator = True)
-- [ ] Smarter frame caching algorithm. 
