@@ -2,9 +2,9 @@
 Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list and/or generator object.
 
 ## Functionality
+* Easily grab video frames via iterator or list-like slicing
 * Handles Video Files, Webcams, RTSP Stream, HTTP Stream
-* Easy iteration and list-like slicing of video frames
-* More intuitive access to the internal video variables (fps, height, width, etc.)
+* More intuitive access to the internal video variables (height, width, fps, etc.)
 * Multi-threaded execution and optional frame caching for speed
 * Apply image transforms to your output, optionally save new video with transforms applied
 * Extract frames from video / webcam and save to image files
@@ -100,3 +100,4 @@ I think this is a system issue. A workaround I have found is to set VideoLoader(
 
 ## TODO
 - [x] Have VideoLoader slicing return iterator instead of list - Use VideoLoader('myvideo.mp4',return_slices_as_iterator = True)
+- [ ] For applying image transforms, investigate usage of ThreadPool class (likely faster than single thread)
