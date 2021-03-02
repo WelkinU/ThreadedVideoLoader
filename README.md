@@ -22,15 +22,15 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
         #do some processing
     
 #### Indexing and List Slicing
-    frame100 = vid[100]          #get the 100th frame of the video - first frame of a video is 0
-    lastFrame = vid[-1]          #negative indexes work too
-    slicedList = vid[50:100:-2]  #list-like slicing. Use precache_frames for fast repeated slicing on large slices
+    frame100 = vid[100]                 #get the 100th frame of the video - first frame of a video is 0
+    lastFrame = vid[-1]                 #negative indexes work too
+    slicedList = vid[50:100:-2]         #list-like slicing. Use precache_frames for fast repeated slicing on large slices
 
 #### Easy Access to Video Parameters
-    numFrames = len(vid)      #Get the frame length of the video. Can also do vid.frame_count
-    fps = vid.fps             #Get the video fps
-    height = vid.height       #Get the height in pixels
-    width = vid.width         #Get the width in pixels
+    numFrames = len(vid)                #Get the frame length of the video
+    fps = vid.fps                       #Get the video fps
+    height = vid.height                 #Get the height in pixels
+    width = vid.width                   #Get the width in pixels
 
     print(vid)                          #Print the main properties of the VideoLoader object
 
