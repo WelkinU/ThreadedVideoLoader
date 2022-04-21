@@ -282,7 +282,7 @@ class VideoLoader():
     def get_frame_position(self):
         return self.cap.get(self.pos_frames_number)
 
-    def apply_transform_to_video(self,output_video_path=None,output_video_codec = None, fps = None, start = 0, end = None, step = 1, enable_start_stop_with_keypress = False):
+    def save_video_to_file(self,output_video_path=None,output_video_codec = None, fps = None, start = 0, end = None, step = 1, enable_start_stop_with_keypress = False):
         ''' Apply image_transform to video.
         output_video_path {str} -- Filepath to the output video (ex. path/to/video.mp4). Defaults behavior is as follows:
                                     If input video is my/video/test.mp4, default output is my/video/test_transformed.mp4
@@ -334,7 +334,7 @@ class VideoLoader():
             vid_writer.write(frame)
 
             if enable_start_stop_with_keypress:
-                cv2.imshow('PRESS ANY KEY TO STOP DUMPING FRAMES',frame)
+                cv2.imshow('PRESS ANY KEY TO STOP EXPORTING FRAMES',frame)
                 if 0 <= cv2.waitKey(1):
                     break
 
@@ -342,11 +342,11 @@ class VideoLoader():
         print('Done.')
         return 0
 
-    def dump_frames_from_video(self, output_folder, file_format = 'frame{:05d}.jpg', start = 0, end = None, step = 1, enable_start_stop_with_keypress = False):
-        ''' Use this to dump frames from a video or webcam
-        output_folder {str} -- Folder to dump the output files to.
-        file_format {str} -- The file name and format to dump frames to. The first {} in the format is replaced with the frame number.
-                             Ex. frame{:05d}.jpg dumps frames as frame00000.jpg, frame00001.jpg, etc.
+    def export_frames_from_video(self, output_folder, file_format = 'frame{:05d}.jpg', start = 0, end = None, step = 1, enable_start_stop_with_keypress = False):
+        ''' Use this to export frames from a video or webcam
+        output_folder {str} -- Folder to export the output files to.
+        file_format {str} -- The file name and format to export frames to. The first {} in the format is replaced with the frame number.
+                             Ex. frame{:05d}.jpg exports frames as frame00000.jpg, frame00001.jpg, etc.
         start {int} -- Start frame number - useful for processing only a portion of the video.
         end {int} -- End frame number - useful for processing only a portion of the video. Defaults to end of video
         start {int} -- Step ie. process every Nth frame - useful for processing only a portion of the video.
@@ -370,7 +370,7 @@ class VideoLoader():
             cv2.imwrite(output_folder + '/' + file_format.format(idx), frame) #can put this in a thread for speed when using webcam
 
             if enable_start_stop_with_keypress:
-                cv2.imshow('PRESS ANY KEY TO STOP DUMPING FRAMES',frame)
+                cv2.imshow('PRESS ANY KEY TO STOP EXPORTING FRAMES',frame)
                 if 0 <= cv2.waitKey(1):
                     break
 
@@ -409,7 +409,7 @@ class VideoLoader():
                         #continue attmpting the next frame into the queue until it's read by the main thread or the main thread has stopped
                         while self.thread_started:
                             try:
-                                self.frame_queue.put(frame,block=True, timeout = 1)
+                                self.frame_queue.put(frame, block=True, timeout = 1)
                                 break
                             except:
                                 pass
