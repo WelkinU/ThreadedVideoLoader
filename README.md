@@ -55,7 +55,7 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
     vid = VideoLoader('myvideo.mp4')
     
     #output a video starting on frame 100, ending on frame 400 with a step size of 10 
-    vid.apply_transform_to_video(start = 100, end = 400, step = 10)
+    vid.save_video_to_file(start = 100, end = 400, step = 10)
 
 #### Recording webcam output as video
     webcam = VideoLoader(0)
@@ -73,13 +73,13 @@ Extract frames from a video file or webcam video stream and save them to a folde
     file_format = 'frame{:05d}.jpg' #frame{:05d}.jpg extracts frames as frame00000.jpg, frame00001.jpg, etc.
 
     vid = VideoLoader('myvideo.mp4')
-    vid.dump_frames_from_video('my/output/folder', file_format = file_format)
+    vid.export_frames_from_video('my/output/folder', file_format = file_format)
     
     #output only a portion of frames - every 10th frame from frame 0 to 100
-    vid.dump_frames_from_video('my/output/folder', start = 0, end = 100, step = 10)
+    vid.export_frames_from_video('my/output/folder', start = 0, end = 100, step = 10)
     
     webcam = VideoLoader(0)
-    webcam.dump_frames_from_video('my/output/folder', file_format = file_format,enable_start_stop_with_keypress = True)
+    webcam.export_frames_from_video('my/output/folder', file_format = file_format,enable_start_stop_with_keypress = True)
     
     
 ## Software Requirements
@@ -99,5 +99,4 @@ Options:
 I think this is a system issue. A workaround I have found is to set VideoLoader(0, height = **1081**, width = 1920) - it loads frames at 30 FPS and returns videos at the correct size 1920x1080 (not 1081)
 
 ## TODO
-- [x] Have VideoLoader slicing return iterator instead of list - Use VideoLoader('myvideo.mp4',return_slices_as_iterator = True)
 - [ ] For applying image transforms, investigate usage of ThreadPool class (likely faster than single thread)
