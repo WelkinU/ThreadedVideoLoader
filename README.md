@@ -46,7 +46,7 @@ Basic multi-threaded wrapper of OpenCV's VideoCapture that behaves like a list a
 
 #### Applying image transforms to videos / webcam output
     #This VideoLoader loads cropped images - the first 100 pixels in each row and column are cropped!
-    vid_flipped = VideoLoader('myvideo.mp4', lambda x: x[100:, 100:])
+    vid_cropped = VideoLoader('myvideo.mp4', image_transform = lambda x: x[100:, 100:])
 
     #This VideoLoader loads images upside-down!
     vid_flipped = VideoLoader('myvideo.mp4', image_transform = np.flipud)
